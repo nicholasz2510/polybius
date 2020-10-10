@@ -131,4 +131,4 @@ dmypy.json
 #JetBrains stuffs
 .idea/
 
-f.txt
+secret.txt
