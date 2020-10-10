@@ -1,29 +1,85 @@
-import discord
+# import discord
 from discord.ext import commands
 import json
+import math
+import datetime
 
 bot = commands.Bot(command_prefix='$')
+
+with open("../data.json") as data_file:
+    data = json.load(data_file)
 
 
 @bot.event
 async def on_ready():
-    print('Logged on as {0}!'.format(bot.user))
-    global data
-    data_file = open("../data.json")
-    data = json.load(data_file)
-
-
-@bot.command()
-async def info(ctx):
-    await ctx.send('TODO help')
+    print('Logged on as ' + str(bot.user))
 
 
 @bot.command()
 @commands.cooldown(1, 60 * 60 * 24, commands.BucketType.user)
 async def daily(ctx):
-    await ctx.send('TODO daily')
+    discord_id = str(ctx.message.author.id)
+    if discord_id not in data:
+        await ctx.send("You need to register first! Do `$register`")
+    else:
+        data[discord_id]["points"] += 1
+        await ctx.send("You got 1 :candy:")
+        _save()
 
 
-f = open('../secret.txt', 'r')
-bot.run(f.readline())
-f.close()
+@daily.error
+async def daily_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.send('You already claimed your daily reward! Try again in ' + str(datetime.timedelta(seconds=math.floor(error.retry_after))))
+    else:
+        raise error
+
+
+@bot.command()
+@commands.cooldown(1, 60 * 60 * 24 * 30, commands.BucketType.user)
+async def monthly(ctx):
+    discord_id = str(ctx.message.author.id)
+    if discord_id not in data:
+        await ctx.send("You need to register first! Do `$register`")
+    else:
+        data[discord_id]["points"] += 10
+        await ctx.send("You got 1 :chocolate_bar: (equivalent to 10 :candy:)")
+        _save()
+
+
+@monthly.error
+async def monthly_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.send('You already claimed your monthly reward! Try again in ' + str(datetime.timedelta(seconds=math.floor(error.retry_after))))
+    else:
+        raise error
+
+
+@bot.command()
+async def bal(ctx):
+    discord_id = str(ctx.message.author.id)
+    if discord_id in data:
+        await ctx.send("You have " + str(data[discord_id]["points"]) + " :candy:")
+    else:
+        await ctx.send("You need to register first! Do `$register`")
+
+
+@bot.command()
+async def register(ctx):
+    discord_id = str(ctx.message.author.id)
+    if discord_id not in data:
+        data[discord_id] = {}
+        data[discord_id]["points"] = 0
+        await ctx.send("You've been registered!")
+        _save()
+    else:
+        await ctx.send("You are already registered!")
+
+
+def _save():
+    with open('../data.json', 'w+') as file_save:
+        json.dump(data, file_save)
+
+
+with open('../secret.txt', 'r') as f:
+    bot.run(f.readline())
