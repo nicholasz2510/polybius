@@ -132,3 +132,4 @@ dmypy.json
 .idea/
 
 secret.txt
+data.json

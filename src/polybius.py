@@ -1,27 +1,29 @@
 import discord
+from discord.ext import commands
+import json
+
+bot = commands.Bot(command_prefix='$')
+
+
+@bot.event
+async def on_ready():
+    print('Logged on as {0}!'.format(bot.user))
+    global data
+    data_file = open("../data.json")
+    data = json.load(data_file)
+
+
+@bot.command()
+async def info(ctx):
+    await ctx.send('TODO help')
+
+
+@bot.command()
+@commands.cooldown(1, 60 * 60 * 24, commands.BucketType.user)
+async def daily(ctx):
+    await ctx.send('TODO daily')
+
 
 f = open('../secret.txt', 'r')
-
-
-class MyClient(discord.Client):
-    async def on_ready(self):
-        print('Logged on as {0}!'.format(self.user))
-
-    async def on_message(self, message):
-        if message.content.startswith('$'):
-            print(str(message.author) + ': ' + message.content[1:])
-
-        if message.author == client.user:
-            return
-
-        elif message.content.startswith('$help') or message.content.startswith('-info'):
-            await message.channel.send('TODO')
-
-        elif message.content.startswith('$'):
-            await message.channel.send('Hello! I\'m a Discord bot <@449579826278563860> made!\nMy prefix is `$`\nFor '
-                                       'a list of commands, type `$help` or `$info`')
-
-
-client = MyClient()
-client.run(f.readline())
+bot.run(f.readline())
 f.close()
