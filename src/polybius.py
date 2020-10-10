@@ -1,4 +1,4 @@
-# import discord
+import discord
 from discord.ext import commands
 import json
 import math
@@ -56,6 +56,25 @@ async def monthly_error(ctx, error):
 
 
 @bot.command()
+async def pot(ctx, recipient: discord.Member):
+    if str(ctx.message.author.id) in data:
+        if data[str(ctx.message.author.id)]["honey_potter"]:
+            if not str(recipient.id) in data:
+                await ctx.send("The person you're giving a :honey_pot: to hasn't registered yet! Tell them to do `$register`")
+                return
+            if ctx.message.author.id == recipient.id:
+                await ctx.send("You can't pot yourself... :unamused:")
+                return
+            data[str(recipient.id)]["points"] += 100
+            _save()
+            await ctx.send("Wow! <@" + str(ctx.message.author.id) + "> just gave <@" + str(recipient.id) + "> a :honey_pot:! (worth 100 :candy:)")
+        else:
+            await ctx.send("Hey, you don't have permission to do that!")
+    else:
+        await ctx.send("You need to register first! Do `$register`")
+
+
+@bot.command()
 async def bal(ctx):
     discord_id = str(ctx.message.author.id)
     if discord_id in data:
@@ -70,6 +89,7 @@ async def register(ctx):
     if discord_id not in data:
         data[discord_id] = {}
         data[discord_id]["points"] = 0
+        data[discord_id]["honey_potter"] = False
         await ctx.send("You've been registered!")
         _save()
     else:
