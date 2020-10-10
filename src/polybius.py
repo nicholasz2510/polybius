@@ -1,3 +1,4 @@
+import asyncio
 import discord
 from discord.ext import commands
 import json
@@ -94,10 +95,15 @@ async def pot_error(ctx, error):
 
 @bot.command()
 async def trivia(ctx):
+    discord_id = str(ctx.message.author.id)
+    if discord_id not in data:
+        await ctx.send("You need to register first! Do `$register`")
+        return
+
     with open("../trivia/" + random.choice(os.listdir("../trivia")), encoding="utf-8") as trivia_file:
         trivia_questions = json.load(trivia_file)
     question = trivia_questions[random.randint(0, len(trivia_questions) - 1)]
-    message = question["question"] + "\n\n"
+    message = "Question for <@" + str(ctx.message.author.id) + ">:\n" + question["question"] + "\n\n"
     unicode_answers = unicode_max_answers[:len(question["choices"])]
     answer = question["choices"].index(question["answer"])
     for i in range(len(question["choices"])):
@@ -105,7 +111,26 @@ async def trivia(ctx):
     sent = await ctx.send(message)
     for c in unicode_answers:
         await sent.add_reaction(c)
+
     print(trivia_answers[answer] + " " + question["answer"])
+
+    def check(reaction_arg, user_arg):
+        return user_arg == ctx.message.author
+
+    try:
+        reaction, user = await bot.wait_for('reaction_add', timeout=60.0, check=check)
+    except asyncio.TimeoutError:
+        await ctx.send("Trivia question for <@" + str(ctx.message.author.id) + "> timed out.")
+        return
+
+    if unicode_answers.index(str(reaction)) == answer:
+        data[discord_id]["points"] += 5
+        await ctx.send("<@" + str(ctx.message.author.id) + "> " + trivia_answers[answer] + " " + question["answer"] + " was correct! You received 1 :lollipop: (equivalent to 5 :candy:)")
+        _save()
+    else:
+        data[discord_id]["points"] -= 1
+        await ctx.send("<@" + str(ctx.message.author.id) + "> " + str(reaction) + " " + question["choices"][unicode_answers.index(str(reaction))] + " was incorrect... The correct answer was " + trivia_answers[answer] + " " + question["answer"] + ". You lost 1 :candy:")
+        _save()
 
 
 @bot.command()
