@@ -6,7 +6,8 @@ import datetime
 import os
 import random
 
-trivia_max_answers = [":regional_indicator_a:", ":regional_indicator_b:", ":regional_indicator_c:", ":regional_indicator_d:"]
+trivia_answers = [":regional_indicator_a:", ":regional_indicator_b:", ":regional_indicator_c:", ":regional_indicator_d:"]
+unicode_max_answers = ['🇦', '🇧', '🇨', '🇩']
 
 bot = commands.Bot(command_prefix='$')
 
@@ -97,11 +98,13 @@ async def trivia(ctx):
         trivia_questions = json.load(trivia_file)
     question = trivia_questions[random.randint(0, len(trivia_questions) - 1)]
     message = question["question"] + "\n\n"
-    trivia_answers = trivia_max_answers[:len(question["choices"])]
+    unicode_answers = unicode_max_answers[:len(question["choices"])]
     answer = question["choices"].index(question["answer"])
     for i in range(len(question["choices"])):
         message += trivia_answers[i] + " " + question["choices"][i] + "\n"
-    await ctx.send(message)
+    sent = await ctx.send(message)
+    for c in unicode_answers:
+        await sent.add_reaction(c)
     print(trivia_answers[answer] + " " + question["answer"])
 
 
