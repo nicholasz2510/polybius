@@ -17,6 +17,14 @@ async def on_ready():
     print('Logged on as ' + str(bot.user))
 
 
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send("That wasn't a valid command!\nType `$help` to see a list of commands.")
+    else:
+        raise error
+
+
 @bot.command()
 @commands.cooldown(1, 60 * 60 * 24, commands.BucketType.user)
 async def daily(ctx):
