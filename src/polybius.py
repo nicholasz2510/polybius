@@ -3,6 +3,8 @@ from discord.ext import commands
 import json
 import math
 import datetime
+import os
+import random
 
 bot = commands.Bot(command_prefix='$')
 
@@ -74,6 +76,11 @@ async def pot(ctx, recipient: discord.Member):
         await ctx.send("You need to register first! Do `$register`")
 
 
+@pot.error
+async def pot_error(ctx, error):
+    await ctx.send('Make sure you have the recipient in the command: `$pot <recipient>`')
+
+
 @bot.command()
 async def bal(ctx):
     discord_id = str(ctx.message.author.id)
@@ -92,6 +99,8 @@ async def register(ctx):
         data[discord_id]["honey_potter"] = False
         await ctx.send("You've been registered!")
         _save()
+        daily.reset_cooldown(ctx)
+        monthly.reset_cooldown(ctx)
     else:
         await ctx.send("You are already registered!")
 
