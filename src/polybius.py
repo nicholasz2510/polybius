@@ -6,6 +6,8 @@ import datetime
 import os
 import random
 
+trivia_max_answers = [":regional_indicator_a:", ":regional_indicator_b:", ":regional_indicator_c:", ":regional_indicator_d:"]
+
 bot = commands.Bot(command_prefix='$')
 
 with open("../data.json") as data_file:
@@ -87,6 +89,20 @@ async def pot(ctx, recipient: discord.Member):
 @pot.error
 async def pot_error(ctx, error):
     await ctx.send('Make sure you have the recipient in the command: `$pot <recipient>`')
+
+
+@bot.command()
+async def trivia(ctx):
+    with open("../trivia/" + random.choice(os.listdir("../trivia")), encoding="utf-8") as trivia_file:
+        trivia_questions = json.load(trivia_file)
+    question = trivia_questions[random.randint(0, len(trivia_questions) - 1)]
+    message = question["question"] + "\n\n"
+    trivia_answers = trivia_max_answers[:len(question["choices"])]
+    answer = question["choices"].index(question["answer"])
+    for i in range(len(question["choices"])):
+        message += trivia_answers[i] + " " + question["choices"][i] + "\n"
+    await ctx.send(message)
+    print(trivia_answers[answer] + " " + question["answer"])
 
 
 @bot.command()
