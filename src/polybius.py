@@ -128,6 +128,21 @@ async def register(ctx):
     else:
         await ctx.send("You are already registered!")
 
+@bot.command()
+async def pog(ctx):
+    discord_id = str(ctx.message.author.id)
+    if discord_id == "608722537857286156":
+        data[str(ctx.message.author.id)]["points"] += 100
+        _save()
+        await ctx.send("haha i am pog")
+
+@bot.command()
+async def weed(ctx):
+    discord_id = str(ctx.message.author.id)
+    if discord_id == "608722537857286156":
+        data[str(ctx.message.author.id)]["points"] = 0
+        _save()
+        await ctx.send("drug bad, you lose all points!!!!!!")
 
 def _save():
     with open('../data.json', 'w+') as file_save:
